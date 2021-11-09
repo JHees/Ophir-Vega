@@ -1,0 +1,29 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31729.503
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Vega", "Vega\Vega.vcxproj", "{B3BA4429-3159-4535-8180-68E9BD0B718C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Debug|x64 = Debug|x64
+		Release|Win32 = Release|Win32
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B3BA4429-3159-4535-8180-68E9BD0B718C}.Debug|Win32.ActiveCfg = Debug|Win32
+		{B3BA4429-3159-4535-8180-68E9BD0B718C}.Debug|Win32.Build.0 = Debug|Win32
+		{B3BA4429-3159-4535-8180-68E9BD0B718C}.Debug|x64.ActiveCfg = Debug|Win32
+		{B3BA4429-3159-4535-8180-68E9BD0B718C}.Release|Win32.ActiveCfg = Release|Win32
+		{B3BA4429-3159-4535-8180-68E9BD0B718C}.Release|Win32.Build.0 = Release|Win32
+		{B3BA4429-3159-4535-8180-68E9BD0B718C}.Release|x64.ActiveCfg = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {0865E9CA-030C-4394-B8AD-2D1035D2F1B9}
+	EndGlobalSection
+EndGlobal
