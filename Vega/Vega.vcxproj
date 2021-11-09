@@ -23,6 +23,9 @@
     <ClInclude Include="Vega.h" />
     <ClInclude Include="__DATE.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include=".clang-format" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{B3BA4429-3159-4535-8180-68E9BD0B718C}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>

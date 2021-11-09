@@ -67,7 +67,7 @@ int main(int argc, char **argv)
                (option("no-open-device").call([&]() { selected |= mode::NoOpenDevice; }))
                    % "Do not open device.",
                (option("format").call([&]() { selected |= mode::FormatHelp; })
-                & opt_value("Format", conf.format))
+                & opt_value("Format", conf.format).call([&]() { selected &= ~mode::FormatHelp; }))
                    % "Output data format. (default: \'yy-mm-dd HH:MM:SSttDATAttTIMESTAMP\')",
                (option("o", "output") & value("path", conf.output))
                    % "Output data to a file. (default: \'.\\Vega <Date>.txt\')",
@@ -128,35 +128,32 @@ int main(int argc, char **argv)
 
     conf.output = std::filesystem::absolute(conf.output);
     auto ext    = conf.output.has_extension() ? conf.output.extension() : "txt";
+    if (std::filesystem::exists(conf.output) && std::filesystem::is_directory(conf.output))
+    {
+        char fileName[20];
+        std::strftime(fileName, sizeof(fileName), "%y-%m-%d", localtime(&tt));
+        conf.output /= "Vega " + std::string(fileName);
+    }
     conf.output.replace_extension(ext);
     if (std::filesystem::exists(conf.output))
     {
-        if (std::filesystem::is_directory(conf.output))
+        std::string str = conf.output.stem().generic_string();
+        do
         {
-            char fileName[20];
-            std::strftime(fileName, sizeof(fileName), "%y-%m-%d", localtime(&tt));
-            conf.output /= "Vega " + std::string(fileName);
-            conf.output.replace_extension(ext);
-        }
-        if (std::filesystem::is_regular_file(conf.output))
-        {
-            std::string str = conf.output.stem().generic_string();
-            do
+            std::smatch sm;
+            if (std::regex_search(str, sm, std::regex("[ ]-[ ]([\\d]{1,})$")))
             {
-                std::smatch sm;
-                if (std::regex_search(str, sm, std::regex("[ ]-[ ]([\\d]{1,})$")))
-                {
-                    str = std::regex_replace(str, std::regex("[ ]-[ ]([\\d]{1,})$"), " - " + std::to_string(std::stoi(sm[1]) + 1));
-                }
-                else
-                {
-                    str.append(" - 1");
-                }
-                conf.output.replace_filename(str);
-                conf.output.replace_extension(ext);
-            } while (std::filesystem::exists(conf.output));
-        }
+                str = std::regex_replace(str, std::regex("[ ]-[ ]([\\d]{1,})$"), " - " + std::to_string(std::stoi(sm[1]) + 1));
+            }
+            else
+            {
+                str.append(" - 1");
+            }
+            conf.output.replace_filename(str);
+            conf.output.replace_extension(ext);
+        } while (std::filesystem::exists(conf.output));
     }
+
     std::ofstream file;
     file.open(conf.output);
     if (!file.is_open())
@@ -220,6 +217,7 @@ int main(int argc, char **argv)
                 data.str("");
                 data << ws2s(device.OphiLM().StatusString(statuses[i]));
                 ret = std::regex_replace(ret, std::regex("STATUS"), data.str());
+                data.str("");
                 data << std::fixed << std::setprecision(3) << timestamps[i];
                 ret = std::regex_replace(ret, std::regex("TIMESTAMP"), data.str());
                 file << ret << '\n';
