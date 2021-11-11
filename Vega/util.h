@@ -1,8 +1,7 @@
 #pragma once
-#include <string>
-
 #include <codecvt>
 #include <locale>
+#include <string>
 std::wstring s2ws(const std::string &str)
 {
     using convert_typeX = std::codecvt_utf8<wchar_t>;

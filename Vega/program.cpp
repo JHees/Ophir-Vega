@@ -1,6 +1,3 @@
-// Sample code for using the OphirLMMeasurement.CoLMMeasurement COM object C++
-// wrapper. See OphirLMMeasurement.h for more details.
-
 #include <chrono>
 #include <ctime>
 #include <filesystem>
@@ -9,7 +6,6 @@
 #include <regex>
 
 #define NOMINMAX
-//#pragma warning(disable : 4996)
 #include <Windows.h>
 
 #include <signal.h>
@@ -118,6 +114,8 @@ int main(int argc, char **argv)
         std::string excample;
         excample.append(buf);
         std::strftime(buf, sizeof(buf), "Today is ttyy/mm/dd, ttand now time is ttHH,MM,SS\n\t-> Today is %t%y/%m/%d, %tand now time is %t%H,%M,%S\n", localtime(&tt));
+        excample.append(buf);
+        std::strftime(buf, sizeof(buf), "yy-mm-dd HH:MM:SSttDATAttTIMESTAMP\n\t-> %y-%m-%d %H:%M:%S%t1.100e-10%12345678\n", localtime(&tt));
         excample.append(buf);
 
         std::cout << make_man_page(formatHelp, argv[0], formatfmt)

@@ -1,6 +1,10 @@
-#pragma once
-// source file build_defs.h
+// -----------------------------------------------
+// File that provides build time macro
+//
+// Details: https://stackoverflow.com/questions/11697820/how-to-use-date-and-time-predefined-macros-in-as-two-integers-then-stri
+// -----------------------------------------------
 
+#pragma once
 #ifndef BUILD_DEFS_H
 #define BUILD_DEFS_H
 
