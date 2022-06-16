@@ -18,15 +18,12 @@
     <ClCompile Include="OphirLMMeasurement.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="program.cpp">
+    <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="OphirLMMeasurement.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="clipp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Vega.h">
@@ -36,6 +33,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="__DATE.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="serial.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

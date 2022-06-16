@@ -12,13 +12,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="OphirLMMeasurement.cpp" />
-    <ClCompile Include="program.cpp">
+    <ClCompile Include="main.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="clipp.h" />
     <ClInclude Include="OphirLMMeasurement.h" />
+    <ClInclude Include="serial.h" />
     <ClInclude Include="util.h" />
     <ClInclude Include="Vega.h" />
     <ClInclude Include="__DATE.h" />

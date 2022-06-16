@@ -1,15 +1,23 @@
 #pragma once
 #include "OphirLMMeasurement.h"
 #include "util.h"
+#include <atomic>
 #include <boost/range/adaptor/indexed.hpp>
 #include <comdef.h>
 #include <iomanip>
 #include <iostream>
 #include <regex>
-
 class Vega
 {
 public:
+    struct VegaData
+    {
+        unsigned int index = 0;
+        double value;
+        double timestamps;
+        OphirLMMeasurement::Status status;
+        VegaData(unsigned i, double v, double t, OphirLMMeasurement::Status s) : index(i), value(v), timestamps(t), status(s){};
+    };
     enum class configuration
     {
         Diffuser,
@@ -75,7 +83,11 @@ public:
     };
 
 public:
-    Vega(){};
+    Vega()
+    {
+        is_done.clear();
+        stop_running.test_and_set();
+    };
     ~Vega()
     {
         OphirLM.StopAllStreams(); // stop measuring
@@ -110,11 +122,11 @@ public:
             std::wcout << L"Head type:          " << headType << L" \n";
             std::wcout << L"Head serial number: " << headSN << L" \n";
             std::wcout << L"Open Device success.\n\n";
+            is_done.test_and_set();
             return true;
         }
         else
         {
-
             std::wcout << L"Open Device FAILED.\n\n";
             return false;
         }
@@ -128,28 +140,64 @@ public:
     {
         PlugAndPlayCallback = callback;
     }
-    void open_stream() //todo streamMode
-    {
-        //OphirLM.ConfigureStreamMode(hDevice, channel, 1, 2000);
-        //OphirLM.ConfigureStreamMode(hDevice, channel, 0, 1);
-        //OphirLM.ConfigureStreamMode(hDevice, channel, 2, 0);
-
-        OphirLM.RegisterPlugAndPlay(PlugAndPlayCallback);
-        OphirLM.RegisterDataReady(DataReadyCallback);
-        OphirLM.StartStream(hDevice, channel);
-    }
     void run()
     {
         // A message loop is necessary to receive events.
         // An alternative is to call GetData in a loop (with a small delay in the
         // loop) and not use events at all.
+        open_stream();
         MSG Msg;
-        while (GetMessage(&Msg, NULL, 0, 0) > 0)
+        while (stop_running.test_and_set() && GetMessage(&Msg, NULL, 0, 0) > 0)
         {
             TranslateMessage(&Msg);
             DispatchMessage(&Msg);
         }
+        stop_stream();
     }
+    bool run_once()
+    {
+        open_stream();
+        MSG Msg;
+        if (GetMessage(&Msg, NULL, 0, 0) > 0)
+        {
+            TranslateMessage(&Msg);
+            DispatchMessage(&Msg);
+            stop_stream();
+            return true;
+        }
+        stop_stream();
+        return false;
+    }
+    void toldVegaDataisReadyandWait()
+    {
+        while (is_done.test_and_set())
+            ;
+    }
+    void toldVegaDataWasRead()
+    {
+        is_done.clear();
+    }
+    void stopRun()
+    {
+        stop_running.clear();
+    }
+
+private:
+    void open_stream() //todo streamMode
+    {
+        //OphirLM.ConfigureStreamMode(hDevice, channel, 1, 2000);
+        //OphirLM.ConfigureStreamMode(hDevice, channel, 0, 1);
+        //OphirLM.ConfigureStreamMode(hDevice, channel, 2, 0);
+        OphirLM.RegisterPlugAndPlay(PlugAndPlayCallback);
+        OphirLM.RegisterDataReady(DataReadyCallback);
+        OphirLM.StartStream(hDevice, channel);
+    }
+    void stop_stream()
+    {
+        OphirLM.StopStream(hDevice, channel);
+    }
+
+public:
     void print_options(configuration config, bool is_printAllOptions = true)
     {
         auto status       = get_options(config);
@@ -237,7 +285,7 @@ public:
                         if (std::regex_search(input, sm, std::regex("(\\d+)(nm)?")))
                         {
                             index = matchOption(sm[1]);
-                            if (int wavelength = std::stoi(sm[1]); index == -1 && status.data.WavelengthsExtraData.mod && status.data.WavelengthsExtraData.min < wavelength && wavelength < status.data.WavelengthsExtraData.max)
+                            if (int wavelength = std::stoi(sm[1]); index == -1 && status.data.WavelengthsExtraData.mod && status.data.WavelengthsExtraData.min <= wavelength && wavelength <= status.data.WavelengthsExtraData.max)
                             {
                                 try
                                 {
@@ -311,6 +359,7 @@ public:
     }
 
 private:
+    //public:
     status get_options(configuration config)
     {
         status ret;
@@ -344,17 +393,18 @@ private:
     }
 
 private:
-    std::function<void(long, long)> DataReadyCallback = [](long hDevice, long channel) {
+    std::function<void(long, long)> DataReadyCallback = [this](long hDevice, long channel) {
         std::vector<double> values;
         std::vector<double> timestamps;
         std::vector<OphirLMMeasurement::Status> statuses;
         OphirLM.GetData(hDevice, channel, values, timestamps, statuses);
+        is_done.clear();
         for (size_t i = 0; i < values.size(); ++i)
             std::wcout << L"Timestamp: " << std::fixed << std::setprecision(3)
                        << timestamps[i] << L" Reading: " << std::scientific << values[i]
                        << L" Status: " << OphirLM.StatusString(statuses[i]) << L"\n";
     };
-    std::function<void(void)> PlugAndPlayCallback = []() {
+    std::function<void(void)> PlugAndPlayCallback = [this]() {
         std::wcout << L"Device has been removed from the USB. \n";
     };
 
@@ -373,6 +423,9 @@ private:
     } initializer; // must call for COM initialization and deinitialization
 private:
     long hDevice = 0, channel = 0;
+    std::atomic_flag is_done; //lock if data ready and unlock after being read
+    std::atomic_flag stop_running;
 };
 Vega::CoInitializer Vega::initializer; // call before initialize OphirLM
 OphirLMMeasurement Vega::OphirLM;
+using VegaData = Vega::VegaData;
